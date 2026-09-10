@@ -1,0 +1,121 @@
+{
+ "chesterfield": {
+  "name": "Chesterfield",
+  "parcels": 149352,
+  "heirs": 2378,
+  "heirs_rate_pct": 1.59,
+  "hot_cores": 1,
+  "cold_cores": 12,
+  "median_value_heirs": 286300,
+  "median_yearbuilt_heirs": 1979,
+  "vacancy_pct_heirs": 2.13,
+  "bounds": [
+   -77.8784,
+   37.217,
+   -77.2442,
+   37.564
+  ]
+ },
+ "colonial_heights": {
+  "name": "Colonial Heights",
+  "parcels": 7695,
+  "heirs": 317,
+  "heirs_rate_pct": 4.12,
+  "hot_cores": 2,
+  "cold_cores": 0,
+  "median_value_heirs": 169950,
+  "median_yearbuilt_heirs": 1963,
+  "vacancy_pct_heirs": 23.17,
+  "bounds": [
+   -77.4318,
+   37.2332,
+   -77.3621,
+   37.2985
+  ]
+ },
+ "henrico": {
+  "name": "Henrico",
+  "parcels": 122757,
+  "heirs": 2387,
+  "heirs_rate_pct": 1.94,
+  "hot_cores": 0,
+  "cold_cores": 14,
+  "median_value_heirs": 282300,
+  "median_yearbuilt_heirs": 1969,
+  "vacancy_pct_heirs": 4.93,
+  "bounds": [
+   -77.6554,
+   37.352,
+   -77.177,
+   37.7104
+  ]
+ },
+ "hopewell": {
+  "name": "Hopewell",
+  "parcels": 10358,
+  "heirs": 388,
+  "heirs_rate_pct": 3.75,
+  "hot_cores": 1,
+  "cold_cores": 0,
+  "median_value_heirs": 112700,
+  "median_yearbuilt_heirs": 1956,
+  "vacancy_pct_heirs": 26.84,
+  "bounds": [
+   -77.3378,
+   37.2576,
+   -77.2523,
+   37.3177
+  ]
+ },
+ "petersburg": {
+  "name": "Petersburg",
+  "parcels": 14933,
+  "heirs": 729,
+  "heirs_rate_pct": 4.88,
+  "hot_cores": 9,
+  "cold_cores": 0,
+  "median_value_heirs": 72100,
+  "median_yearbuilt_heirs": 1956,
+  "vacancy_pct_heirs": 23.11,
+  "bounds": [
+   -77.4549,
+   37.1651,
+   -77.3298,
+   37.245
+  ]
+ },
+ "richmond_city": {
+  "name": "Richmond City",
+  "parcels": 76757,
+  "heirs": 1892,
+  "heirs_rate_pct": 2.46,
+  "hot_cores": 3,
+  "cold_cores": 0,
+  "median_value_heirs": 237000,
+  "median_yearbuilt_heirs": 1947,
+  "vacancy_pct_heirs": 13.13,
+  "bounds": [
+   -77.6012,
+   37.4466,
+   -77.3855,
+   37.6028
+  ]
+ },
+ "MSA": {
+  "name": "Richmond Region",
+  "parcels": 381852,
+  "heirs": 8091,
+  "heirs_rate_pct": 2.12,
+  "hot_cores": 16,
+  "cold_cores": 26,
+  "median_value_heirs": 245700,
+  "median_yearbuilt_heirs": 1965,
+  "vacancy_pct_heirs": 9.55,
+  "bounds": [
+   -77.8784,
+   37.1651,
+   -77.177,
+   37.7104
+  ]
+ }
+}
