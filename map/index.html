@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Heirs’ Property in the Richmond Region</title>
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
+<style>
+@import url(https://fonts.googleapis.com/css2?family=Nunito+Sans:opsz,wght@6..12,400;6..12,500;6..12,600;6..12,700&family=Radio+Canada:wght@400;500;600;700&display=swap);
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Nunito Sans',sans-serif;background:#ffffff;color:#1f1d19;overflow:hidden}
+#map{position:absolute;top:0;left:0;right:0;bottom:0}
+
+.title-block{position:absolute;top:24px;left:24px;z-index:10;max-width:360px}
+.title-block h1{font-family:'Radio Canada','Nunito Sans',sans-serif;font-size:24px;font-weight:700;letter-spacing:-.5px;line-height:1.15}
+
+.title-block h1 span{background:rgba(255,255,255,.85);padding:2px 8px;border-radius:4px;box-shadow:0 2px 14px rgba(0,0,0,.14);-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.editorial-link{display:block;font-family:'Nunito Sans',sans-serif;font-size:12px;color:#46413a;text-decoration:none;padding:2px 0}
+.editorial-link:hover{color:#1f1d19;text-decoration:underline}
+
+.panel{position:absolute;top:24px;right:24px;z-index:10;width:272px;background:rgba(255,255,255,.88);backdrop-filter:blur(16px);border:1px solid rgba(35,31,25,.1);border-radius:12px;padding:18px;box-shadow:0 12px 34px rgba(52,45,35,.18);max-height:calc(100vh - 48px);overflow-y:auto}
+.panel-toggle{display:flex;align-items:center;justify-content:space-between;width:100%;text-align:left;background:none;border:0;padding:0;cursor:pointer;user-select:none;font-family:'Radio Canada','Nunito Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:.3px;color:#1f1d19}
+.panel-toggle:focus-visible{outline:2px solid rgba(31,29,25,.55);outline-offset:3px;border-radius:3px}
+.panel-toggle .pt-chev{font-size:13px;color:#1f1d19;transition:transform .2s}
+.panel-body{margin-top:14px}
+.panel.collapsed{width:auto;padding:12px 16px}
+.panel.collapsed .panel-body{display:none}
+.panel.collapsed .pt-chev{transform:rotate(-90deg)}
+.panel-title{font-family:'Radio Canada','Nunito Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#746d61;margin-bottom:10px}
+.divider{height:1px;background:rgba(35,31,25,.1);margin:14px 0}
+.view-buttons{display:flex;flex-wrap:wrap;gap:6px}
+.ctl-btn{padding:5px 10px;font-family:'Nunito Sans',sans-serif;font-size:11px;font-weight:500;color:#5f5a50;background:rgba(255,255,255,.72);border:1px solid rgba(35,31,25,.12);border-radius:6px;cursor:pointer;transition:all .2s}
+.ctl-btn:hover{background:rgba(255,255,255,.95);color:#1f1d19;border-color:rgba(31,29,25,.5)}
+.ctl-btn.active{background:rgba(31,29,25,.08);color:#1f1d19;border-color:rgba(31,29,25,.55)}
+.ctl-btn:focus-visible{outline:2px solid rgba(31,29,25,.55);outline-offset:2px}
+
+.infocard .ic-region{font-size:15px;font-weight:600;color:#1f1d19}
+.infocard .ic-hero{font-family:'Radio Canada','Nunito Sans',sans-serif;font-size:28px;font-weight:400;color:#1f1d19;line-height:1}
+.infocard .ic-herolabel{font-size:11px;color:#746d61;line-height:1.35}
+
+.ramp-buttons{display:flex;gap:6px}
+.ramp-btn{flex:1;text-align:center}
+
+.legend-bar{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);z-index:10;display:flex;flex-direction:column;align-items:center;gap:8px;padding:13px 22px;background:rgba(255,255,255,.9);backdrop-filter:blur(12px);border:1px solid rgba(35,31,25,.1);border-radius:10px;font-size:11px;color:#5f5a50;box-shadow:0 10px 28px rgba(52,45,35,.16);max-width:min(92vw,780px)}
+.legend-title{font-family:'Radio Canada','Nunito Sans',sans-serif;font-size:13px;font-weight:500;color:#2a2721;letter-spacing:.3px;text-align:center}
+.legend-swatches{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center}
+.legend-item{display:flex;align-items:center;gap:6px}
+.legend-item .sw{width:16px;height:12px;border-radius:2px;border:1px solid rgba(35,31,25,.18)}
+.legend-item .lb{font-size:11px;color:#46413a;white-space:nowrap}
+.legend-item .sw.line{height:3px;border:none;border-radius:1px}
+
+.legend-gradient{display:flex;align-items:center;gap:9px;width:min(78vw,420px)}
+.legend-gradient .lg-bar{flex:1;height:11px;border-radius:6px;border:1px solid rgba(35,31,25,.14)}
+.legend-gradient .lg-end{font-size:11px;color:#46413a;white-space:nowrap}
+
+.tract-tooltip{position:absolute;z-index:20;pointer-events:none;background:rgba(255,255,255,.95);backdrop-filter:blur(12px);border:1px solid rgba(35,31,25,.12);border-radius:8px;padding:10px 14px;font-size:12px;color:#2a2721;box-shadow:0 8px 24px rgba(52,45,35,.18);transform:translate(-50%,-100%);margin-top:-14px;opacity:0;transition:opacity .12s;max-width:250px}
+.tract-tooltip.visible{opacity:1}
+.tract-tooltip .tt-head{font-size:12.5px;font-weight:600;color:#1f1d19}
+.tract-tooltip .tt-sub{font-family:'Radio Canada','Nunito Sans',sans-serif;font-size:9.5px;color:#9a9385;margin-top:1px}
+.tract-tooltip .tt-value{font-family:'Radio Canada','Nunito Sans',sans-serif;font-size:17px;font-weight:400;color:#1f1d19;margin-top:5px;line-height:1.15}
+.tract-tooltip .tt-label{font-size:10px;color:#746d61;margin-top:1px}
+.tract-tooltip .tt-divider{height:1px;background:rgba(35,31,25,.1);margin:7px 0 4px}
+.tract-tooltip .tt-row{display:flex;justify-content:space-between;font-size:11px;margin-top:3px;gap:14px}
+.tract-tooltip .tt-row .k{color:#746d61}
+.tract-tooltip .tt-row .v{font-family:'Radio Canada','Nunito Sans',sans-serif;color:#2a2721;text-align:right}
+.tract-tooltip .tt-foot{font-size:9.5px;color:#9a9385;margin-top:7px;line-height:1.35}
+
+.custom-attribution{position:absolute;bottom:8px;right:8px;z-index:5;font-size:10px;color:#746d61;background:rgba(255,255,255,.76);padding:3px 8px;border-radius:4px;border:1px solid rgba(35,31,25,.08)}
+.maplibregl-ctrl-attrib{display:none!important}
+.maplibregl-ctrl-logo{display:none!important}
+
+.load-error{position:absolute;left:24px;bottom:24px;z-index:30;max-width:460px;display:none;background:rgba(255,255,255,.95);color:#2a2721;border:1px solid rgba(179,75,31,.5);border-radius:10px;padding:12px 14px;font-size:12px;line-height:1.45;box-shadow:0 10px 28px rgba(52,45,35,.18)}
+.load-error strong{color:#b34b1f}
+
+@media (max-width:1150px){
+.title-block{max-width:300px}
+.legend-bar{left:16px;transform:none;align-items:flex-start;max-width:min(78vw,calc(100vw - 340px))}
+.legend-title{text-align:left}
+.legend-swatches{justify-content:flex-start}
+}
+@media (max-width:820px){
+.panel{width:216px;padding:13px;top:32px;right:12px}
+.title-block{top:32px;left:12px;max-width:56vw}
+.title-block h1{font-size:17px}
+.legend-bar{padding:10px 14px;bottom:20px}
+.legend-gradient{width:min(70vw,300px)}
+}
+@media (max-width:640px){
+.legend-bar{max-width:calc(100vw - 32px)}
+}
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div class="load-error" id="loadError"></div>
+
+<div class="title-block">
+  <h1><span>Heirs’ Property in the Richmond Region</span></h1>
+</div>
+
+<div class="panel" id="panel">
+  <button type="button" class="panel-toggle" id="panelToggle" aria-expanded="true" aria-controls="panelBody">
+    <span class="pt-title">Map controls</span>
+    <span class="pt-chev">▾</span>
+  </button>
+  <div class="panel-body" id="panelBody">
+  <div class="panel-title">Map view</div>
+  <div class="view-buttons" id="viewButtons"></div>
+
+  <div class="divider"></div>
+  <div class="panel-title">Area snapshot</div>
+  <div class="infocard" id="infocard">
+    <div class="ic-region" id="icRegion">—</div>
+    <div style="display:flex;align-items:baseline;gap:8px;margin-top:6px">
+      <div class="ic-hero" id="icHero">—</div>
+      <div class="ic-herolabel" id="icHeroLabel">of parcels flagged</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="panel-title">Color ramp</div>
+  <div class="ramp-buttons">
+    <button type="button" class="ctl-btn ramp-btn active" id="rampDefault" aria-pressed="true">Default</button>
+    <button type="button" class="ctl-btn ramp-btn" id="rampCB" aria-pressed="false">Colorblind</button>
+  </div>
+
+  <div class="divider"></div>
+  <a class="editorial-link" href="../methods.html" target="_top">Methods &amp; data notes →</a>
+  </div>
+</div>
+
+<div class="legend-bar">
+  <div class="legend-title" id="legendTitle">—</div>
+  <div class="legend-swatches" id="legendSwatches"></div>
+</div>
+
+<div class="tract-tooltip" id="tooltip"></div>
+<div class="custom-attribution">Richmond Heirs Property Network | CityWork, LLC / ACS 5-year / Census TIGER / MapLibre GL / © CARTO / © OpenStreetMap</div>
+
+<script>
+"use strict";
+
+const DATA = {
+  points: "data/surface_points.geojson",
+  jurisdictions: "data/jurisdictions_public.geojson",
+  stats: "data/region_stats.json",
+  notes: "data/data_notes.json",
+  meta: "data/surface_meta.json",
+};
+
+const EXPECT = { tracts: 258, suppressed: 12, hot: 16, cold: 26, jurisdictions: 6 };
+
+const RAMPS = {
+  default: ["#fef0d9", "#fdcc8a", "#fc8d59", "#e34a33", "#b30000"],
+  colorblind: ["#ffffcc", "#a1dab4", "#41b6c4", "#2c7fb8", "#253494"],
+};
+
+const FIELDS = {
+  hp:   { prop: "hp",   max: 1 },
+  pov:  { prop: "pov",  max: 50,
+          stops: [0, 0, 10, 0.174, 20, 0.428, 30, 0.671, 40, 0.913, 48, 1.19] },
+  race: { prop: "race", max: 100,
+          stops: [0, 0, 20, 0.174, 40, 0.428, 60, 0.671, 80, 0.913, 90, 1.19] },
+};
+
+const POV_EDGES = [10, 20, 30, 40];
+
+const T = {
+  bleed_m: 4500,      
+  intensity: 400,     
+  opacity: 100,       
+  floor: 3,           
+  maxZoom: 10,        
+  sample_m: 2000,     
+  hoverNamesHP: true,
+  showRing: true,
+};
+
+const RENDER_CAL = 0.21;
+
+let notes = null, regionStats = null, jurGJ = null, meta = null, pointsGJ = null;
+let activeView = "hp", activeRamp = "default";
+
+const VIEWS = {};
+
+const $ = id => document.getElementById(id);
+
+function showLoadError(msg) {
+  const el = $("loadError");
+  el.innerHTML = `<strong>This map could not start.</strong><br>${msg}`;
+  el.style.display = "block";
+  window.__MAP_ERROR = msg;
+}
+
+const LAT0 = 37.42;
+let LATTICE_M = 500;  
+const mPerPxAtZoom = z => 156543.03392 * Math.cos(LAT0 * Math.PI / 180) / Math.pow(2, z);
+const ZOOM_STOPS = [7.5, 8, 8.5, 9, 9.5, 10, 11, 12, 13, 14];
+
+const radiusPx = z => Math.max(7, Math.min(220, T.bleed_m / mPerPxAtZoom(z)));
+function radiusExpr() {
+  const stops = [];
+  ZOOM_STOPS.forEach(z => stops.push(z, radiusPx(z)));
+  return ["interpolate", ["exponential", 2], ["zoom"]].concat(stops);
+}
+
+function densityPerUnitWeight(z) {
+  const r = radiusPx(z), spacing = LATTICE_M / mPerPxAtZoom(z);
+  return 2.5066 * Math.pow(r / 3, 2) / Math.pow(spacing, 2);
+}
+function intensityExpr(gain) {
+  const stops = [];
+  ZOOM_STOPS.forEach(z => stops.push(z, gain / densityPerUnitWeight(z)));
+  return ["interpolate", ["linear"], ["zoom"]].concat(stops);
+}
+
+function weightExpr(view) {
+  const f = FIELDS[view];
+  const stops = f.stops || [0, 0, f.max, 1];
+  return ["case", ["==", ["get", f.prop], null], 0,
+    ["interpolate", ["linear"], ["get", f.prop]].concat(stops)];
+}
+
+function colorExpr(ramp) {
+
+  
+  const floor = Math.min(0.6, Math.max(0, T.floor / 100));
+  const head = 1 - floor;
+  const alpha = [0.55, 0.80, 0.88, 0.93, 0.96];
+  const e = ["interpolate", ["linear"], ["heatmap-density"],
+    0, "rgba(0,0,0,0)",
+    Math.max(0.001, floor), hexA(ramp[0], 0)];
+  RAMP_AT.forEach((t, i) => e.push(floor + head * t, hexA(ramp[i], alpha[i])));
+  return e;
+}
+
+const RAMP_AT = [0.12, 0.34, 0.55, 0.76, 1.0];
+function hexA(hex, a) {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
+}
+function coreColorExpr(hex) {
+  return ["interpolate", ["linear"], ["heatmap-density"],
+    0, "rgba(0,0,0,0)", 0.30, hexA(hex, 0), 0.62, hexA(hex, 0.30), 1, hexA(hex, 0.50)];
+}
+
+function verifyData() {
+  const sc = meta.source_counts || {};
+  const checks = Object.keys(EXPECT).map(k => [sc[k], EXPECT[k], "source " + k]);
+  checks.push([jurGJ.features.length, EXPECT.jurisdictions, "jurisdictions"]);
+  checks.push([pointsGJ.features.length, meta.points, "surface points"]);
+  const bad = checks.filter(([got, want]) => got !== want);
+  if (bad.length) {
+    throw new Error("data integrity check failed: " +
+      bad.map(([got, want, what]) => `${what}: ${got} (expected ${want})`).join("; "));
+  }
+  
+  const leaked = Object.keys(pointsGJ.features[0].properties)
+    .filter(k => !meta.properties.includes(k));
+  if (leaked.length) throw new Error("unexpected properties in surface data: " + leaked.join(", "));
+}
+
+const map = new maplibregl.Map({
+  container: "map",
+  style: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+  center: [-77.52, 37.42],
+  zoom: 8.6,
+  minZoom: 7.5,
+  maxZoom: T.maxZoom,
+  attributionControl: false,
+  hash: true,
+});
+map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-right");
+window._map = map;
+
+map.on("load", async () => {
+  try {
+    const [pts, j, s, nt, mt] = await Promise.all(
+      Object.values(DATA).map(u => fetch(u, { cache: "no-store" }).then(r => {
+        if (!r.ok) throw new Error(`could not fetch ${u} (HTTP ${r.status})`);
+        return r.json();
+      })));
+    pointsGJ = pts; jurGJ = j; regionStats = s; notes = nt; meta = mt;
+    verifyData();
+    LATTICE_M = meta.lattice_m || LATTICE_M;   
+  } catch (e) {
+    showLoadError(String(e.message || e));
+    return;
+  }
+
+  VIEWS.hp = { legendTitle: "Heirs’ Property Concentrations", continuous: true };
+  VIEWS.pov = { legendTitle: "Residents below the poverty line (ACS 5-year)",
+    labels: notes.poverty_bins.labels };
+  VIEWS.race = { legendTitle: "Non-Hispanic Black share of residents (ACS 5-year)",
+    labels: notes.race_bins.labels };
+
+  map.addSource("surface", { type: "geojson", data: pointsGJ });
+  map.addSource("jur", { type: "geojson", data: jurGJ });
+  map.addSource("cursor", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
+
+  const firstSymbol = (map.getStyle().layers.find(l => l.type === "symbol") || {}).id;
+  const addBelow = spec => map.addLayer(spec, firstSymbol);
+
+  addBelow({ id: "surface-heat", type: "heatmap", source: "surface",
+    paint: {
+      "heatmap-weight": weightExpr("hp"),
+      "heatmap-intensity": intensityExpr(T.intensity / 100),
+      "heatmap-radius": radiusExpr(),
+      "heatmap-color": colorExpr(RAMPS[activeRamp]),
+      "heatmap-opacity": T.opacity / 100,
+    } });
+
+  addBelow({ id: "jur-line", type: "line", source: "jur",
+    paint: { "line-color": "rgba(31,29,25,.6)",
+             "line-width": ["interpolate", ["linear"], ["zoom"], 8, 1.1, 12, 2] } });
+
+  
+  addBelow({ id: "surface-hit", type: "circle", source: "surface",
+    paint: { "circle-radius": 1, "circle-opacity": 0, "circle-color": "#000" } });
+
+  
+  addBelow({ id: "cursor-ring", type: "circle", source: "cursor",
+    paint: {
+      "circle-radius": ["interpolate", ["exponential", 2], ["zoom"]].concat(ringStops()),
+      "circle-color": "rgba(31,29,25,.05)",
+      "circle-stroke-color": "rgba(31,29,25,.34)",
+      "circle-stroke-width": 1.1,
+    } });
+
+  buildViewButtons();
+  wireHover();
+  applyView("hp");
+  updateInfoCard("MSA");
+
+  const params = new URLSearchParams(location.search);
+  const presetView = params.get("view");
+  if (presetView && VIEWS[presetView]) applyView(presetView);
+  window.addEventListener("message", ev => {
+    const d = ev.data;
+    if (!d || d.rhpnMap !== true) return;
+    if (d.view && VIEWS[d.view]) applyView(d.view);
+  });
+  window.__MAP_READY = true;
+});
+
+map.on("error", e => {
+  const msg = String((e.error && e.error.message) || "");
+  if (/Failed to fetch|NetworkError|load/i.test(msg) && !window.__MAP_READY)
+    showLoadError(msg);
+});
+
+function ringStops() {
+  const stops = [];
+  for (let z = 8; z <= 14; z++) stops.push(z, Math.max(4, Math.min(300, T.sample_m / mPerPxAtZoom(z))));
+  return stops;
+}
+
+function applyView(name) {
+  activeView = name;
+  map.setPaintProperty("surface-heat", "heatmap-weight", weightExpr(name));
+  document.querySelectorAll(".view-btn").forEach(b => {
+    const on = b.dataset.view === name;
+    b.classList.toggle("active", on);
+    b.setAttribute("aria-pressed", on ? "true" : "false");
+  });
+  buildLegend();
+}
+
+function buildViewButtons() {
+  const wrap = $("viewButtons");
+  const labels = { hp: "Heirs’ property", pov: "Poverty", race: "% Black residents" };
+  Object.keys(VIEWS).forEach(k => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "ctl-btn view-btn" + (k === "hp" ? " active" : "");
+    btn.setAttribute("aria-pressed", k === "hp" ? "true" : "false");
+    btn.dataset.view = k;
+    btn.textContent = labels[k];
+    btn.addEventListener("click", () => applyView(k));
+    wrap.appendChild(btn);
+  });
+}
+
+function buildLegend() {
+  const v = VIEWS[activeView];
+  $("legendTitle").textContent = v.legendTitle;
+  const wrap = $("legendSwatches");
+  wrap.innerHTML = "";
+  const ramp = RAMPS[activeRamp];
+
+  if (v.continuous) {
+    const g = document.createElement("div");
+    g.className = "legend-gradient";
+    g.innerHTML = `<span class="lg-end">Less</span>` +
+      `<span class="lg-bar" style="background:linear-gradient(90deg,${ramp.join(",")})"></span>` +
+      `<span class="lg-end">More</span>`;
+    wrap.appendChild(g);
+  } else {
+    const add = (style, label, cls) => {
+      const item = document.createElement("div");
+      item.className = "legend-item";
+      item.innerHTML = `<span class="sw ${cls || ""}" style="${style}"></span><span class="lb">${label}</span>`;
+      wrap.appendChild(item);
+    };
+    ramp.forEach((c, i) => add(`background:${c}`, v.labels[i]));
+  }
+}
+
+const BANDS = {
+  pov: { edges: POV_EDGES, word: "residents in poverty", phrase: "in poverty" },
+  race: { step: 20, cap: 80, word: "non-Hispanic Black residents",
+          phrase: "Black residents" },
+};
+function band(v, kind) {
+  if (!Number.isFinite(v)) return "—";
+  const b = BANDS[kind];
+  if (b.edges) {
+    const e = b.edges;
+    if (v < e[0]) return `under ${e[0]}%`;
+    for (let i = 0; i < e.length - 1; i++)
+      if (v < e[i + 1]) return `around ${e[i]}%–${e[i + 1]}%`;
+    return `${e[e.length - 1]}% or more`;
+  }
+  const { step, cap } = b;
+  if (v < step) return `under ${step}%`;
+  if (v >= cap) return `${cap}% or more`;
+  const lo = Math.floor(v / step) * step;
+  return `around ${lo}%–${lo + step}%`;
+}
+const HP_WORDS = [
+  "well below the regional pattern",
+  "below the regional pattern",
+  "about the regional pattern",
+  "above the regional pattern",
+  "well above the regional pattern",
+];
+
+function hpLevel(v) {
+  if (!Number.isFinite(v)) return "—";
+  const floor = Math.min(0.6, Math.max(0, T.floor / 100));
+  const d = (T.intensity / 100) * RENDER_CAL * v;
+  let i = 0;
+  RAMP_AT.forEach(t => { if (d >= floor + (1 - floor) * t) i++; });
+  return HP_WORDS[Math.min(i, HP_WORDS.length - 1)];
+}
+
+function sampleAt(pt, lngLat) {
+  const mpp = mPerPxAtZoom(map.getZoom());
+  const boxPx = Math.max(6, T.sample_m / mpp);
+  const feats = map.queryRenderedFeatures(
+    [[pt.x - boxPx, pt.y - boxPx], [pt.x + boxPx, pt.y + boxPx]], { layers: ["surface-hit"] });
+  if (!feats.length) return null;
+  const acc = { hp: [], pov: [], race: [] };
+  const cosLat = Math.cos(lngLat.lat * Math.PI / 180);
+  feats.forEach(f => {
+    const [lon, lat] = f.geometry.coordinates;
+    const dx = (lon - lngLat.lng) * 111320 * cosLat;
+    const dy = (lat - lngLat.lat) * 111320;
+    if (Math.hypot(dx, dy) > T.sample_m) return;   
+    const p = f.properties;
+    ["hp", "pov", "race"].forEach(k => {
+      const val = p[k];
+      if (val !== null && val !== undefined && Number.isFinite(Number(val))) acc[k].push(Number(val));
+    });
+  });
+  if (!acc.hp.length) return null;
+  const mean = a => a.length ? a.reduce((s, x) => s + x, 0) / a.length : NaN;
+  return { hp: mean(acc.hp), pov: mean(acc.pov), race: mean(acc.race), n: acc.hp.length };
+}
+
+function tooltipHTML(s) {
+  const km = (T.sample_m / 1000).toFixed(1).replace(/\.0$/, "");
+  let lead;
+  if (activeView === "pov" || activeView === "race") {
+    const kind = activeView;
+    lead = `This area is ${band(kind === "pov" ? s.pov : s.race, kind)} ` +
+           `${BANDS[kind].phrase}`;
+  } else {
+    lead = T.hoverNamesHP
+      ? `This area is ${hpLevel(s.hp)} for likely heirs’ property`
+      : "This area";
+  }
+  let h = `<div class="tt-head">${lead}</div>` +
+          `<div class="tt-sub">Around ${km} km of the pointer</div>`;
+  h += `<div class="tt-divider"></div>`;
+  h += `<div class="tt-row"><span class="k">${BANDS.pov.word}</span><span class="v">${band(s.pov, "pov")}</span></div>`;
+  h += `<div class="tt-row"><span class="k">Black residents</span><span class="v">${band(s.race, "race")}</span></div>`;
+  h += `<div class="tt-foot">Averaged over the surrounding area. ` +
+       `Heirs’ property is shown as shading only.</div>`;
+  return h;
+}
+
+function wireHover() {
+  const tooltip = $("tooltip");
+  const cursorSrc = () => map.getSource("cursor");
+  const clear = () => {
+    tooltip.classList.remove("visible");
+    cursorSrc().setData({ type: "FeatureCollection", features: [] });
+    map.getCanvas().style.cursor = "";
+  };
+  map.on("mousemove", e => {
+    const s = sampleAt(e.point, e.lngLat);
+    if (!s) { clear(); return; }
+    tooltip.innerHTML = tooltipHTML(s);
+    tooltip.style.left = e.point.x + "px";
+    tooltip.style.top = e.point.y + "px";
+    tooltip.classList.add("visible");
+    map.getCanvas().style.cursor = "crosshair";
+    cursorSrc().setData(T.showRing
+      ? { type: "FeatureCollection", features: [{ type: "Feature", properties: {},
+          geometry: { type: "Point", coordinates: [e.lngLat.lng, e.lngLat.lat] } }] }
+      : { type: "FeatureCollection", features: [] });
+  });
+  map.on("mouseout", clear);
+}
+
+function updateInfoCard(key) {
+  const s = regionStats[key];
+  if (!s) return;
+  $("icRegion").textContent = s.name;
+  $("icHero").textContent = s.heirs_rate_pct.toFixed(2) + "%";
+}
+
+$("panelToggle").addEventListener("click", () => {
+  const collapsed = $("panel").classList.toggle("collapsed");
+  $("panelToggle").setAttribute("aria-expanded", collapsed ? "false" : "true");
+});
+
+function setRamp(name) {
+  activeRamp = name;
+  const isDefault = name === "default";
+  $("rampDefault").classList.toggle("active", isDefault);
+  $("rampCB").classList.toggle("active", !isDefault);
+  $("rampDefault").setAttribute("aria-pressed", isDefault ? "true" : "false");
+  $("rampCB").setAttribute("aria-pressed", isDefault ? "false" : "true");
+  map.setPaintProperty("surface-heat", "heatmap-color", colorExpr(RAMPS[name]));
+  buildLegend();
+}
+$("rampDefault").addEventListener("click", () => setRamp("default"));
+$("rampCB").addEventListener("click", () => setRamp("colorblind"));
+
+</script>
+</body>
+</html>
